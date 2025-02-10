@@ -11,12 +11,16 @@ lgb.Dataset(
   colnames = NULL,
   categorical_feature = NULL,
   free_raw_data = TRUE,
-  info = list(),
-  ...
+  label = NULL,
+  weight = NULL,
+  group = NULL,
+  init_score = NULL
 )
 }
 \arguments{
-\item{data}{a \code{matrix} object, a \code{dgCMatrix} object or a character representing a filename}
+\item{data}{a \code{matrix} object, a \code{dgCMatrix} object,
+a character representing a path to a text file (CSV, TSV, or LibSVM),
+or a character representing a path to a binary \code{lgb.Dataset} file}
 
 \item{params}{a list of parameters. See
 \href{https://lightgbm.readthedocs.io/en/latest/Parameters.html#dataset-parameters}{
@@ -39,19 +43,34 @@ This reduces LightGBM's memory consumption, but it means that the Dataset object
 cannot be changed after it has been constructed. If you'd prefer to be able to
 change the Dataset object after construction, set \code{free_raw_data = FALSE}.}
 
-\item{info}{a list of information of the \code{lgb.Dataset} object}
+\item{label}{vector of labels to use as the target variable}
 
-\item{...}{other information to pass to \code{info} or parameters pass to \code{params}}
+\item{weight}{numeric vector of sample weights}
+
+\item{group}{used for learning-to-rank tasks. An integer vector describing how to
+group rows together as ordered results from the same set of candidate results
+to be ranked. For example, if you have a 100-document dataset with
+\code{group = c(10, 20, 40, 10, 10, 10)}, that means that you have 6 groups,
+where the first 10 records are in the first group, records 11-30 are in the
+second group, etc.}
+
+\item{init_score}{initial score is the base prediction lightgbm will boost from}
 }
 \value{
 constructed dataset
 }
 \description{
-Construct \code{lgb.Dataset} object from dense matrix, sparse matrix
-             or local file (that was created previously by saving an \code{lgb.Dataset}).
+LightGBM does not train on raw data.
+             It discretizes continuous features into histogram bins, tries to
+             combine categorical features, and automatically handles missing and
+
+             The \code{Dataset} class handles that preprocessing, and holds that
+             alternative representation of the input data.
 }
 \examples{
 \donttest{
+\dontshow{setLGBMthreads(2L)}
+\dontshow{data.table::setDTthreads(1L)}
 data(agaricus.train, package = "lightgbm")
 train <- agaricus.train
 dtrain <- lgb.Dataset(train$data, label = train$label)
